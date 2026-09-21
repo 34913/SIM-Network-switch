@@ -24,62 +24,51 @@ module Controller
 
 	always @ (*) begin
 		if (reset) begin
-			state <= 0;
+			state = 0;
 		end
 
 		case (state)
 			0: begin
 				if (packet_send_req == 1'b1) begin
-					state <= 1;
+					state = 2;
 				end
 			end
 			1: begin
-				state <= 2;
+				state = 2;
 			end
 			2: begin
 				if (port_found == 1'b0) begin
-					state <= 0;
+					state = 0;
 				end else begin
-					state <= 2;
+					state = 2;
 				end
 			end
 			3: begin
 				if (received == 1'b1) begin
-					state <= 0;
+					state = 0;
 				end
 			end
 
-			default: state <= 0;
+			default: state = 0;
 		endcase
 	end
 
 	always @ (state) begin
+		memory_blocked = 0;
+		packet_finished = 0;
+		packet_send = 0;
+
 		case (state)
-			0: begin
-				memory_blocked <= 0;
-				packet_finished <= 0;
-				packet_send <= 0;
-			end
 			1: begin
-				memory_blocked <= 1;
-				packet_finished <= 0;
-				packet_send <= 0;
+				memory_blocked = 1;
 			end
 			2: begin
-				memory_blocked <= 1;
-				packet_finished <= 0;
-				packet_send <= 1;
+				memory_blocked = 1;
+				packet_send = 1;
 			end
 			3: begin
-				memory_blocked <= 1;
-				packet_finished <= 1;
-				packet_send <= 0;
-			end
-
-			default: begin
-				memory_blocked <= 0;
-				packet_finished <= 0;
-				packet_send <= 0;
+				memory_blocked = 1;
+				packet_finished = 1;
 			end
 		endcase
 	end
