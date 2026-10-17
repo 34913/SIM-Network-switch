@@ -1,11 +1,11 @@
 module Controller
 	#(
 		// number of output ports
-		parameter NUM_OF_PORTS,
+		parameter NUM_OF_PORTS = 5,
 		// number of bits required to address the output ports
-		PORT_ADDR_LENGTH,
+		PORT_ADDR_LENGTH = 3,
 		// number of data bits
-		DATA_WIDTH
+		DATA_WIDTH = 8
 	)
 	(
 		input wire clk,
@@ -21,53 +21,70 @@ module Controller
 	);
 
 	reg [1:0] state;
+	reg [1:0] next_state;
+
+	always @ (posedge clk, posedge reset) begin
+		if (reset) begin
+			state <= 0;
+		end
+		else begin
+			state <= next_state;
+		end
+	end
 
 	always @ (*) begin
+		next_state = state;
+
 		if (reset) begin
-			state = 0;
+			next_state = 0;
 		end
 
 		case (state)
+			// IDLE state: waiting for packet send request
 			0: begin
 				if (packet_send_req == 1'b1) begin
-					state = 2;
+					next_state = 1;
 				end
 			end
+			// DECIDING state: determining if the packet can be sent to the found port
 			1: begin
-				state = 2;
+				if (port_found == 1'b1) begin
+					next_state = 2;
+				end
+				else begin
+					next_state = 3;
+				end
 			end
+			// SENDING state: sending the packet to the found port
 			2: begin
-				if (port_found == 1'b0) begin
-					state = 0;
-				end else begin
-					state = 2;
+				if (received == 1'b1) begin
+					next_state = 3;
 				end
 			end
+			// FINISHED state: acknowledging that it was sent and received or discarded
 			3: begin
-				if (received == 1'b1) begin
-					state = 0;
-				end
+				next_state = 0;
 			end
 
-			default: state = 0;
+			default: next_state = 0;
 		endcase
 	end
 
-	always @ (state) begin
+	always @ (*) begin
 		memory_blocked = 0;
 		packet_finished = 0;
 		packet_send = 0;
 
 		case (state)
+			0: begin
+			end
 			1: begin
-				memory_blocked = 1;
 			end
 			2: begin
 				memory_blocked = 1;
 				packet_send = 1;
 			end
 			3: begin
-				memory_blocked = 1;
 				packet_finished = 1;
 			end
 		endcase

@@ -1,9 +1,9 @@
 module Memory
 	#(
 		// number of output ports
-		parameter NUM_OF_PORTS,
+		parameter NUM_OF_PORTS = 5,
 		// number of bits required to address the output ports
-		parameter PORT_ADDR_LENGTH
+		parameter PORT_ADDR_LENGTH = 3
 	)
 	(
 		input wire clk,

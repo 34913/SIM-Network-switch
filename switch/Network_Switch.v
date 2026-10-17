@@ -10,13 +10,14 @@ module Network_Switch
 	(
 		input wire clk,
 		input wire reset,
+
 		// index portu do paměti adres
-		input wire [$clog2(NUM_OF_PORTS) - 1 : 0] mem_port_index,
-	
+		input wire [$clog2(NUM_OF_PORTS) - 1 : 0] mem_port_index,	
 		// adresa portu (lze sloučit s packet_addr)
 		input wire [PORT_ADDR_LENGTH - 1 : 0] mem_port_addr,
 		// zápis do paměti adres portů
 		input wire mem_write_enable,
+
 		// data paketu
 		input wire [DATA_WIDTH - 1 : 0] packet_data,
 		// cílová adresa paketu
@@ -27,20 +28,22 @@ module Network_Switch
 		output wire packet_finished,
 	
 		// (pro každý port) požadavek na odeslání paketu
-		output reg [NUM_OF_PORTS - 1 : 0] port_req,
+		output wire [NUM_OF_PORTS - 1 : 0] port_req,
 		// (pro každý port) data paketu
-		output reg [NUM_OF_PORTS * DATA_WIDTH - 1 : 0] port_data,
+		output wire [NUM_OF_PORTS * DATA_WIDTH - 1 : 0] port_data,
 		// (pro každý port) paket byl přijat cílovým zařízením
-		output reg [NUM_OF_PORTS - 1 : 0] port_received
+		input wire [NUM_OF_PORTS - 1 : 0] port_received
 	);
 
 	// dráty
-	wire [PORT_ADDR_LENGTH - 1 : 0] mem_data [NUM_OF_PORTS - 1 : 0];
-	wire eq[NUM_OF_PORTS - 1 : 0];
+	wire [NUM_OF_PORTS * PORT_ADDR_LENGTH - 1 : 0] mem_data_all;
+	wire [NUM_OF_PORTS - 1 : 0] eq;
 
-	wire match;
+	wire port_found;
 	wire packet_send;
 	wire received;
+
+	wire memory_blocked;
 
 	// bloky
 	Memory #(
@@ -52,15 +55,16 @@ module Network_Switch
 		.port_index(mem_port_index),
 		.port_addr(mem_port_addr),
 		.write_enable(mem_write_enable),
-		.memory_blocked(),
-		.data_addrs(mem_data)
+		.memory_blocked(memory_blocked),
+		.data(mem_data_all)
 	);
 
 	Comparators #(
-		.PORT_ADDR_LENGTH(PORT_ADDR_LENGTH)
-	) compare [NUM_OF_PORTS - 1 : 0] (
+		.PORT_ADDR_LENGTH(PORT_ADDR_LENGTH),
+		.NUM_OF_PORTS(NUM_OF_PORTS)
+	) compare (
 		.packet_addr(packet_addr),
-		.mem_data_all(mem_data),
+		.mem_data_all(mem_data_all),
 		.eq(eq)
 	);
 
@@ -68,7 +72,7 @@ module Network_Switch
 		.NUM_OF_PORTS(NUM_OF_PORTS)
 	) or_block (
 		.eq(eq),
-		.match(match)
+		.match(port_found)
 	);
 
 	Controller #(
@@ -79,8 +83,9 @@ module Network_Switch
 		.clk(clk),
 		.reset(reset),
 		.packet_send_req(packet_send_req),
-		.port_found(match),
+		.port_found(port_found),
 		.received(received),
+		.memory_blocked(memory_blocked),
 		.packet_finished(packet_finished),
 		.packet_send(packet_send)
 	);

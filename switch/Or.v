@@ -1,7 +1,7 @@
 module Or
 	#(
 		// number of output ports
-		parameter NUM_OF_PORTS
+		parameter NUM_OF_PORTS = 5
 	)
 	(
 		input wire [NUM_OF_PORTS - 1 : 0] eq,
@@ -10,6 +10,6 @@ module Or
 	);
 
 	// perform logical OR on all eq signals to determine match
-	assign match = |eq;
+	assign match =| eq;
 
 endmodule
