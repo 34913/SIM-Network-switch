@@ -12,7 +12,8 @@ module Comparators
 		output wire [NUM_OF_PORTS - 1 : 0] eq
 	);
 
-	// each bit of eq corresponds to a comparison between packet_addr and a segment of mem_data_all
+	// each bit of eq corresponds to a comparison the adresses
+	// incoming packet address from request and the addresses stored in memory
 	genvar i;
 	generate
 		for (i = 0; i < NUM_OF_PORTS; i = i + 1) begin : compare_loop

@@ -26,6 +26,9 @@ module Mux_Demux_Logic
 		port_request = {NUM_OF_PORTS{1'b0}};
 		port_data = {NUM_OF_PORTS * DATA_WIDTH{1'b0}};
 
+		// if packet send request should be processed for the matching port
+		// determine which port should receive the packet based on the matching condition from equal signals
+		// to this port send request and provide the packet data
 		if (packet_send == 1'b1) begin
 			for (i = 0; i < NUM_OF_PORTS; i = i + 1) begin
 				if (eq[i] == 1'b1) begin
@@ -41,6 +44,8 @@ module Mux_Demux_Logic
 
 		received = 1'b0;
 
+		// determine if the packet has been received by the matching port
+		// if so, set the received signal to indicate the packet has been received
 		if (packet_send == 1'b1) begin
 			for (i = 0; i < NUM_OF_PORTS; i = i + 1) begin
 				if (eq[i] == 1'b1 && port_received[i] == 1'b1) begin

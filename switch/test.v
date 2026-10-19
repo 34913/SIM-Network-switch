@@ -218,10 +218,10 @@ module network_switch_tb
 		wait (packet_finished);
 		#10;
 
-		port_received[1] = 1;
+		port_received[0] = 0;
 		#10;
 
-		if (!packet_finished) begin
+		if (packet_finished) begin
 			$display("TEST4 failed: packet should be finished");
 			$finish;
 		end

@@ -23,6 +23,8 @@ module Controller
 	reg [1:0] state;
 	reg [1:0] next_state;
 
+	// shifting the state to next one on the rising edge of the clock
+	// or reset
 	always @ (posedge clk, posedge reset) begin
 		if (reset) begin
 			state <= 0;
@@ -32,12 +34,10 @@ module Controller
 		end
 	end
 
+	// next state logic based on the current state and input signals
+	// automaton for the controller's state transitions, with little changes from the one described on courses
 	always @ (*) begin
 		next_state = state;
-
-		if (reset) begin
-			next_state = 0;
-		end
 
 		case (state)
 			// IDLE state: waiting for packet send request
@@ -70,6 +70,7 @@ module Controller
 		endcase
 	end
 
+	// output signals based on the current state
 	always @ (*) begin
 		memory_blocked = 0;
 		packet_finished = 0;

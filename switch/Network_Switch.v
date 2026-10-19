@@ -35,7 +35,8 @@ module Network_Switch
 		input wire [NUM_OF_PORTS - 1 : 0] port_received
 	);
 
-	// dráty
+	// -----
+	// internal wires for interconnecting the modules
 	wire [NUM_OF_PORTS * PORT_ADDR_LENGTH - 1 : 0] mem_data_all;
 	wire [NUM_OF_PORTS - 1 : 0] eq;
 
@@ -43,9 +44,11 @@ module Network_Switch
 	wire packet_send;
 	wire received;
 
+	// notifying memory that it should not accept any write requests
 	wire memory_blocked;
 
-	// bloky
+	// -----
+	// Memory block for storing the routing port addresses, indexed by port index
 	Memory #(
 		.NUM_OF_PORTS(NUM_OF_PORTS),
 		.PORT_ADDR_LENGTH(PORT_ADDR_LENGTH)
@@ -59,6 +62,8 @@ module Network_Switch
 		.data(mem_data_all)
 	);
 
+	// -----
+	// Comparators for port address match
 	Comparators #(
 		.PORT_ADDR_LENGTH(PORT_ADDR_LENGTH),
 		.NUM_OF_PORTS(NUM_OF_PORTS)
@@ -68,6 +73,8 @@ module Network_Switch
 		.eq(eq)
 	);
 
+	// -----
+	// Any address match block
 	Or #(
 		.NUM_OF_PORTS(NUM_OF_PORTS)
 	) or_block (
@@ -75,6 +82,8 @@ module Network_Switch
 		.match(port_found)
 	);
 
+	// -----
+	// Controller determining control signals for whole network switch
 	Controller #(
 		.NUM_OF_PORTS(NUM_OF_PORTS),
 		.PORT_ADDR_LENGTH(PORT_ADDR_LENGTH),
@@ -90,6 +99,8 @@ module Network_Switch
 		.packet_send(packet_send)
 	);
 
+	// -----
+	// Mux/Demux logic for routing packets to the correct ports
 	Mux_Demux_Logic #(
 		.NUM_OF_PORTS(NUM_OF_PORTS),
 		.PORT_ADDR_LENGTH(PORT_ADDR_LENGTH),

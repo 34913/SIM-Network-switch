@@ -21,6 +21,7 @@ module Memory
 	reg [PORT_ADDR_LENGTH - 1 : 0] mem_data_addrs [NUM_OF_PORTS - 1 : 0];
 
 	always @ (posedge clk, posedge reset) begin
+		// on reset, clear all memory addresses
 		if (reset) begin: reset_block
 			integer i;
 			for (i = 0; i < NUM_OF_PORTS; i = i + 1) begin
@@ -37,13 +38,14 @@ module Memory
 					disable write_block;
 				end
 			end
-			// if no duplicate found, write the address
+			// if no duplicate found, write the address to the matching index
 			mem_data_addrs[port_index] = port_addr;
 		end
 	end
 
 	always @ (*) begin: data_block
 		integer i;
+		// continuously update the output data based on the current memory addresses
 		for (i = 0; i < NUM_OF_PORTS; i = i + 1) begin
 			data[i * PORT_ADDR_LENGTH +: PORT_ADDR_LENGTH] = mem_data_addrs[i];
 		end
